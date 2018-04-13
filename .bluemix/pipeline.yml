@@ -1,62 +1,39 @@
 ---
 stages:
-- name: BUILD
+- name: RegisterApp
   inputs:
-  - type: git
+  - url: https://git.ng.bluemix.net/shinoj.zacharias/MFPApps.git
+    type: git
     branch: master
-    service: ${SAMPLE_REPO}
-  triggers:
-  - type: commit
+    dir_name: null
   jobs:
   - name: Build
     type: builder
-- name: DEPLOY
-  inputs:
-  - type: job
-    stage: BUILD
-    job: Build
-  triggers:
-  - type: stage
-  properties:
-  - name: CF_APP_NAME
-    value: undefined
-    type: text
-  - name: APP_URL
-    value: undefined
-    type: text
-  jobs:
-  - name: Blue-Green Deploy
-    type: deployer
-    target:
-      region_id: ${PROD_REGION_ID}
-      organization: ${PROD_ORG_NAME}
-      space: ${PROD_SPACE_NAME}
-      application: ${CF_APP_NAME}
-    script: |
+    artifact_dir: ''
+    build_type: npm
+    script: |-
       #!/bin/bash
-      # Push app
-      if ! cf app $CF_APP; then  
-        cf push $CF_APP
-      else
-        OLD_CF_APP=${CF_APP}-OLD-$(date +"%s")
-        rollback() {
-          set +e  
-          if cf app $OLD_CF_APP; then
-            cf logs $CF_APP --recent
-            cf delete $CF_APP -f
-            cf rename $OLD_CF_APP $CF_APP
-          fi
-          exit 1
-        }
-        set -e
-        trap rollback ERR
-        cf rename $CF_APP $OLD_CF_APP
-        cf push $CF_APP
-        cf delete $OLD_CF_APP -f
-      fi
-      # Export app name and URL for use in later Pipeline jobs
-      export CF_APP_NAME="$CF_APP"
-      export APP_URL=http://$(cf app $CF_APP_NAME | grep -e urls: -e routes: | awk '{print $2}')
-      # View logs
-      #cf logs "${CF_APP}" --recent
-      
+      # The default Node.js version is 0.10.40
+      # To use Node.js 0.10.48, uncomment the following line:
+      #export PATH=/opt/IBM/node-v0.10.48/bin:$PATH
+      # To use Node.js 0.12.7, uncomment the following line:
+      #export PATH=/opt/IBM/node-v0.12/bin:$PATH
+      # To use Node.js 4.4.5, uncomment the following line:
+      #export PATH=/opt/IBM/node-v4.4.5/bin:$PATH
+      # To use Node.js 6.7.0, uncomment the following line:
+      export PATH=/opt/IBM/node-v6.7.0/bin:$PATH
+      echo "#### npm install -g mfpdev-cli"
+      npm install -g mfpdev-cli
+      echo "#### mfpdev --version"
+      mfpdev --version
+      cd ResourceRequestAndroid
+      echo "#### adding server definition"
+      mfpdev server add server1 --url 'http://mobilefoundation-ibmbank0cde-server.mybluemix.net:80' --login 'admin' --password 'gAlilei$fr' --setdefault
+      echo "#### mfpdev app register"
+      mfpdev app register
+      curl --help
+hooks:
+- enabled: true
+  label: null
+  ssl_enabled: false
+  url: https://devops-api.ng.bluemix.net/v1/messaging/webhook/publish
