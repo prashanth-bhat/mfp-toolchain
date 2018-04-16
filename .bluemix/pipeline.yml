@@ -2,7 +2,45 @@
 stages:
 - name: RegisterApp
   inputs:
-  - url: https://git.ng.bluemix.net/shinoj.zacharias/MFPApps.git
+  - url: https://git.ng.bluemix.net/shinoj.zacharias/MFP80DevOps.git
+    type: git
+    branch: master
+    service: ${SAMPLE_REPO}
+    dir_name: null
+  triggers:
+  - type: commit
+  properties:
+  - name: SERVER
+    value: http://mobilefoundation-ibmbank0cde-server.mybluemix.net:80
+    type: text
+  - name: USERNAME
+    value: admin
+    type: text
+  - name: PASSWORD
+    value: gAlilei\$fr
+    type: text
+  jobs:
+  - name: Build
+    type: builder
+    artifact_dir: ''
+    build_type: npm
+    script: |
+      #!/bin/bash
+      # To use Node.js 6.7.0, uncomment the following line:
+      export PATH=/opt/IBM/node-v6.7.0/bin:$PATH
+      echo "#### npm install -g mfpdev-cli"
+      npm install -g mfpdev-cli
+      echo "#### mfpdev --version"
+      mfpdev --version
+      echo "#### cd apps/ResourceRequestAndroid"
+      cd apps/ResourceRequestAndroid
+      #echo "#### adding server definition"
+      mfpdev server add server1 --url $SERVER --login $USERNAME --password $PASSWORD --setdefault
+      echo "#### Register App with MFP Server : mfpdev app register"
+      mfpdev app register
+- name: AdapterBuild
+  inputs:
+  - url: https://git.ng.bluemix.net/shinoj.zacharias/MFP80DevOps.git
     type: git
     branch: master
     service: ${SAMPLE_REPO}
@@ -14,25 +52,53 @@ stages:
     build_type: npm
     script: |-
       #!/bin/bash
-      # The default Node.js version is 0.10.40
-      # To use Node.js 0.10.48, uncomment the following line:
-      #export PATH=/opt/IBM/node-v0.10.48/bin:$PATH
-      # To use Node.js 0.12.7, uncomment the following line:
-      #export PATH=/opt/IBM/node-v0.12/bin:$PATH
-      # To use Node.js 4.4.5, uncomment the following line:
-      #export PATH=/opt/IBM/node-v4.4.5/bin:$PATH
       # To use Node.js 6.7.0, uncomment the following line:
       export PATH=/opt/IBM/node-v6.7.0/bin:$PATH
       echo "#### npm install -g mfpdev-cli"
       npm install -g mfpdev-cli
       echo "#### mfpdev --version"
       mfpdev --version
-      cd ResourceRequestAndroid
+      echo "#### cd adapters/JavaAdapter"
+      cd adapters/JavaAdapter
+      echo "#### Build the adapter : mfpdev adapter build"
+      mfpdev adapter build
+- name: AdapterDeploy
+  inputs:
+  - type: job
+    stage: AdapterBuild
+    job: Build
+    dir_name: null
+  triggers:
+  - type: stage
+  properties:
+  - name: SERVER
+    value: http://mobilefoundation-ibmbank0cde-server.mybluemix.net:80
+    type: text
+  - name: USERNAME
+    value: admin
+    type: text
+  - name: PASSWORD
+    value: gAlilei\$fr
+    type: text
+  jobs:
+  - name: Build
+    type: builder
+    artifact_dir: ''
+    build_type: maven
+    script: |-
+      #!/bin/bash
+      # To use Node.js 6.7.0, uncomment the following line:
+      export PATH=/opt/IBM/node-v6.7.0/bin:$PATH
+      echo "#### npm install -g mfpdev-cli"
+      npm install -g mfpdev-cli
+      echo "#### mfpdev --version"
+      mfpdev --version
+      echo "#### cd adapters/JavaAdapter"
+      cd adapters/JavaAdapter
       echo "#### adding server definition"
-      mfpdev server add server1 --url 'http://mobilefoundation-ibmbank0cde-server.mybluemix.net:80' --login 'admin' --password 'gAlilei$fr' --setdefault
-      echo "#### mfpdev app register"
-      mfpdev app register
-      curl --help
+      mfpdev server add server1 --url $SERVER --login $USERNAME --password $PASSWORD --setdefault
+      echo "#### Deploy Adapter : mfpdev adapter deploy"
+      mfpdev adapter deploy
 hooks:
 - enabled: true
   label: null
