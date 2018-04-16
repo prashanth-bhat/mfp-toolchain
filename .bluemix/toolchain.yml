@@ -17,7 +17,7 @@ template:
     git branch: >-
       [master](https://github.com/ShinojEdakkara/mfp80_toolchain/tree/master)
 toolchain:
-  name: 'mfp-app-deploy-{{timestamp}}'
+  name: 'mfp-devops-{{timestamp}}'
   template:
     getting_started:
       $ref: "#/messages/template.gettingStarted"
@@ -26,7 +26,7 @@ services:
     service_id: githubpublic
     parameters:
       repo_name: '{{toolchain.name}}'
-      repo_url: 'https://git.ng.bluemix.net/shinoj.zacharias/MFPApps'
+      repo_url: 'https://git.ng.bluemix.net/shinoj.zacharias/MFP80DevOps'
       type: clone
       has_issues: true
       enable_traceability: true
