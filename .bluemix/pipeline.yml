@@ -99,6 +99,44 @@ stages:
       mfpdev server add server1 --url $SERVER --login $USERNAME --password $PASSWORD --setdefault
       echo "#### Deploy Adapter : mfpdev adapter deploy"
       mfpdev adapter deploy
+- name: AdapterTest
+  inputs:
+  - type: job
+    stage: AdapterDeploy
+    job: Build
+    dir_name: null
+  triggers:
+  - type: stage
+  properties:
+  - name: SERVER
+    value: http://mobilefoundation-ibmbank0cde-server.mybluemix.net:80
+    type: text
+  - name: USERNAME
+    value: admin
+    type: text
+  - name: PASSWORD
+    value: gAlilei\$fr
+    type: text
+  jobs:
+  - name: Test
+    type: tester
+    script: |-
+      #!/bin/bash
+      export PATH=/opt/IBM/node-v6.7.0/bin:$PATH
+      echo "#### npm install -g mfpdev-cli"
+      npm install -g mfpdev-cli
+      echo "#### mfpdev --version"
+      mfpdev --version
+      echo "#### adding server definition"
+      mfpdev server add server1 --url $SERVER --login $USERNAME --password $PASSWORD --setdefault
+      echo "#### cd adapters/JavaAdapter/tests"
+      cd adapters/JavaAdapter/tests
+      echo "#### Testing Adapter Endpoints"
+      ./resource.sh
+      ./resource_greet.sh
+      ./resource_protected.sh
+      ./resource_testpost.sh
+    test_type: simple      
 hooks:
 - enabled: true
   label: null
