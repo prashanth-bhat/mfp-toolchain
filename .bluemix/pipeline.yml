@@ -1,5 +1,75 @@
 ---
 stages:
+- name: BuildApp-Fastlane
+  inputs:
+  - url: https://git.ng.bluemix.net/shinoj.zacharias/MFP80DevOps.git
+    type: git
+    branch: master
+    dir_name: null
+  properties:
+  - name: gitPushUser
+    value: ShinojEdakkara
+    type: text
+  - name: gitPushToken
+    value: 15e07781e22da7cc81788d37cd3b83ec8996e6a2
+    type: text
+  - name: gitPushEmail
+    value: shinojedakkara@gmail.com
+    type: text
+  - name: apkGitPushUrl
+    value: https://$gitPushToken:x-oauth-basic@github.com/ShinojEdakkara/mfp-apps
+      master
+    type: text
+  jobs:
+  - name: Build
+    type: builder
+    artifact_dir: ''
+    build_type: shell
+    script: |+
+      #!/bin/bash
+      export JAVA_HOME=/opt/IBM/java8
+      cd /home/pipeline
+
+      # Android sdk
+      wget https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
+      sudo apt-get install unzip
+      unzip /home/pipeline/sdk-tools-linux-3859397.zip
+      echo 'y' | /home/pipeline/tools/bin/sdkmanager --licenses
+      echo 'y' | /home/pipeline/tools/bin/sdkmanager "platform-tools" "platforms;android-26"
+
+      # Prereq for installing Fastlane: Install RVM
+      gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+      \curl -L https://get.rvm.io | bash -s stable --ruby
+      source /home/pipeline/.rvm/scripts/rvm get stable --autolibs=enable
+      gem -v
+
+      # Install Fastlane
+      gem install fastlane -NV
+
+      # Build the apk file
+      cd /home/pipeline/$BUILD_ID/apps/ResourceRequestAndroid
+      fastlane beta
+
+      mkdir /home/pipeline/temp
+      cp ./app/build/outputs/apk/app-release-unsigned.apk /home/pipeline/temp
+      mkdir /home/pipeline/appupload
+
+      # Push the generated apk for git hub for testing
+      git config --global user.name $gitPushUser
+      git config --global user.email $gitPushEmail
+      git config --global push.default matching
+      cd /home/pipeline/appupload
+
+      git clone https://github.com/ShinojEdakkara/mfp-apps.git .
+      ls
+      rm -rf
+
+      cp /home/pipeline/temp/app-release-unsigned.apk .
+      git add app-release-unsigned.apk
+      git commit -m "released a new version of apk - build : ($BUILD_ID)"
+      echo $apkGitPushUrl
+      git push $apkGitPushUrl
+
 - name: RegisterApp
   inputs:
   - url: https://git.ng.bluemix.net/shinoj.zacharias/MFP80DevOps.git
@@ -99,7 +169,7 @@ stages:
       mfpdev server add server1 --url $SERVER --login $USERNAME --password $PASSWORD --setdefault
       echo "#### Deploy Adapter : mfpdev adapter deploy"
       mfpdev adapter deploy
-- name: AdapterTest
+- name: AdapterTest-UnitTests
   inputs:
   - type: job
     stage: AdapterDeploy
