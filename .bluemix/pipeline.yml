@@ -70,16 +70,14 @@ stages:
       git commit -m "released a new version of apk - build : ($BUILD_ID)"
       echo $apkGitPushUrl
       git push $apkGitPushUrl
-
 - name: RegisterApp
   inputs:
-  - url: https://git.ng.bluemix.net/shinoj.zacharias/MFP80DevOps.git
-    type: git
-    branch: master
-    service: ${SAMPLE_REPO}
+  - type: job
+    stage: BuildApp
+    job: Build
     dir_name: null
   triggers:
-  - type: commit
+  - type: stage
   properties:
   - name: SERVER
     value: http://mobilefoundation-ibmbank0cde-server.mybluemix.net:80
@@ -109,6 +107,7 @@ stages:
       mfpdev server add server1 --url $SERVER --login $USERNAME --password $PASSWORD --setdefault
       echo "#### Register App with MFP Server : mfpdev app register"
       mfpdev app register
+
 - name: AdapterBuild
   inputs:
   - url: https://git.ng.bluemix.net/shinoj.zacharias/MFP80DevOps.git
