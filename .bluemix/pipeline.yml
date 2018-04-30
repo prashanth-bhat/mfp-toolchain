@@ -70,6 +70,45 @@ stages:
       git commit -m "released a new version of apk - build : ($BUILD_ID)"
       echo $apkGitPushUrl
       git push $apkGitPushUrl
+
+- name: TEST-Appium
+  inputs:
+  - url: https://github.com/ShinojEdakkara/test-repo-mfp.git
+    type: git
+    branch: master
+    dir_name: null
+  triggers:
+  - type: stage
+  properties:
+  - name: screenshot_dir
+    value: /home/pipeline/home/pipeline/$BUILD_ID/target
+    type: text
+  - name: applicationPath
+    value: https://github.com/ShinojEdakkara/mfp-apps/raw/master/app-release.apk
+    type: text
+  - name: executionType
+    value: clientside
+    type: text
+  - name: test
+    value: AndroidAppiumExampleTest
+    type: text
+  - name: bitbarApiKey
+    value: oAIdCaufIQBh9Jc0GZvEgEA3sgkPr0MD
+    type: text
+  - name: testdroid_project
+    value: SimpleAndroidTestProject
+    type: text
+  jobs:
+  - name: Test the app using Appium scripts on Bitbar
+    type: builder
+    fail_stage: false
+    artifact_dir: ''
+    build_type: maven
+    script: |-
+      #!/bin/bash
+      cd /home/pipeline/$BUILD_ID/appium/sample-scripts/java
+      mvn clean install -X -Dtest=$test -DexecutionType=$executionType -DapiKey=$bitbarApiKey -DapplicationPath=$applicationPath -Dtestdroid_project=$testdroid_project
+
 - name: RegisterApp
   inputs:
   - type: job

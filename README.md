@@ -1,6 +1,8 @@
-# Build, Deploy of Adapters and Apps for MFP 8.0
+# DevOps - Continous Build and Release for MobileFirst 8.0 Apps and Adapters 
 
-Uses MobileFirst Dev Command Line tools to build and deploy adapters and also to register applications.
+Creates a DevOps pipelines for MFP 8.0. The tool chain creates pipeline for continous build and release of MFP Mobile Apps and Adatpers.
+For MFP Mobile Apps, the pipeline builds the apps with Fastlane, Tests the App with Appium on Bitbar and then Registers the App with MFP.
+For Adapter, the pipleline Builds the Adapters, Deploys the Adapter on MFP,  Tests the Adapter. 
 
 To get started, click **Create toolchain**.
 
