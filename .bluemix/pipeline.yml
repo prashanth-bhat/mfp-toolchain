@@ -52,7 +52,7 @@ stages:
       fastlane beta
 
       mkdir /home/pipeline/temp
-      cp ./app/build/outputs/apk/app-release-unsigned.apk /home/pipeline/temp
+      cp ./app/build/outputs/apk/app-release.apk /home/pipeline/temp
       mkdir /home/pipeline/appupload
 
       # Push the generated apk for git hub for testing
@@ -65,8 +65,8 @@ stages:
       ls
       rm -rf
 
-      cp /home/pipeline/temp/app-release-unsigned.apk .
-      git add app-release-unsigned.apk
+      cp /home/pipeline/temp/app-release.apk .
+      git add app-release.apk
       git commit -m "released a new version of apk - build : ($BUILD_ID)"
       echo $apkGitPushUrl
       git push $apkGitPushUrl
