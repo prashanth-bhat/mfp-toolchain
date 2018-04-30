@@ -71,48 +71,10 @@ stages:
       echo $apkGitPushUrl
       git push $apkGitPushUrl
 
-- name: TEST-Appium
-  inputs:
-  - url: https://github.com/ShinojEdakkara/test-repo-mfp.git
-    type: git
-    branch: master
-    dir_name: null
-  triggers:
-  - type: stage
-  properties:
-  - name: screenshot_dir
-    value: /home/pipeline/home/pipeline/$BUILD_ID/target
-    type: text
-  - name: applicationPath
-    value: https://github.com/ShinojEdakkara/mfp-apps/raw/master/app-release.apk
-    type: text
-  - name: executionType
-    value: clientside
-    type: text
-  - name: test
-    value: AndroidAppiumExampleTest
-    type: text
-  - name: bitbarApiKey
-    value: oAIdCaufIQBh9Jc0GZvEgEA3sgkPr0MD
-    type: text
-  - name: testdroid_project
-    value: SimpleAndroidTestProject
-    type: text
-  jobs:
-  - name: Test the app using Appium scripts on Bitbar
-    type: builder
-    fail_stage: false
-    artifact_dir: ''
-    build_type: maven
-    script: |-
-      #!/bin/bash
-      cd /home/pipeline/$BUILD_ID/appium/sample-scripts/java
-      mvn clean install -X -Dtest=$test -DexecutionType=$executionType -DapiKey=$bitbarApiKey -DapplicationPath=$applicationPath -Dtestdroid_project=$testdroid_project
-
 - name: RegisterApp
   inputs:
   - type: job
-    stage: BuildApp-Fastlane 
+    stage: BuildApp-Fastlane
     job: Build
     dir_name: null
   triggers:
@@ -146,6 +108,45 @@ stages:
       mfpdev server add server1 --url $SERVER --login $USERNAME --password $PASSWORD --setdefault
       echo "#### Register App with MFP Server : mfpdev app register"
       mfpdev app register
+
+- name: TEST-Appium
+  inputs:
+  - url: https://github.com/ShinojEdakkara/test-repo-mfp.git
+    type: git
+    branch: master
+    service: ${SAMPLE_REPO}
+    dir_name: null
+  triggers:
+  - type: stage
+  properties:
+  - name: screenshot_dir
+    value: /home/pipeline/home/pipeline/$BUILD_ID/target
+    type: text
+  - name: applicationPath
+    value: https://github.com/ShinojEdakkara/mfp-apps/raw/master/app-release.apk
+    type: text
+  - name: executionType
+    value: clientside
+    type: text
+  - name: test
+    value: AndroidAppiumExampleTest
+    type: text
+  - name: bitbarApiKey
+    value: oAIdCaufIQBh9Jc0GZvEgEA3sgkPr0MD
+    type: text
+  - name: testdroid_project
+    value: SimpleAndroidTestProject
+    type: text
+  jobs:
+  - name: Test the app using Appium scripts on Bitbar
+    type: builder
+    fail_stage: false
+    artifact_dir: ''
+    build_type: maven
+    script: |-
+      #!/bin/bash
+      cd /home/pipeline/$BUILD_ID/appium/sample-scripts/java
+      mvn clean install -X -Dtest=$test -DexecutionType=$executionType -DapiKey=$bitbarApiKey -DapplicationPath=$applicationPath -Dtestdroid_project=$testdroid_project
 
 - name: AdapterBuild
   inputs:
@@ -245,7 +246,7 @@ stages:
       ./resource_greet.sh
       ./resource_protected.sh
       ./resource_testpost.sh
-    test_type: simple      
+    test_type: simple
 hooks:
 - enabled: true
   label: null
