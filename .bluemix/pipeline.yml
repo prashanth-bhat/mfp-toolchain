@@ -114,7 +114,7 @@ stages:
   - url: https://github.com/ShinojEdakkara/test-repo-mfp.git
     type: git
     branch: master
-    service: ${SAMPLE_REPO}
+    service: ${TEST_REPO}
     dir_name: null
   triggers:
   - type: stage
