@@ -44,7 +44,6 @@ services:
     parameters:
       services:
         - sample-repo
-	- test-repo
       name: '{{services.sample-repo.parameters.repo_name}}'
       ui-pipeline: true
       configuration:
