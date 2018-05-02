@@ -1,4 +1,4 @@
-# DevOps - Continuous Build,Test and Release for MobileFirst 8.0 Apps and Adapters 
+# DevOps - Continuous Build,Test and Release of MobileFirst 8.0 Apps and Adapters 
 
 Creates a DevOps pipeline for MFP 8.0. The toolchain creates pipeline for continous build , test and release of MFP mobile apps and adatpers.
 For MFP mobile apps, the pipeline builds the apps with Fastlane, registers the app with MFP server and then tests the app with Appium on Bitbar.
