@@ -34,7 +34,7 @@ services:
   test-repo:
       service_id: githubpublic
       parameters:
-        repo_name: Test_+'{{toolchain.name}}'
+        repo_name: 'test-{{toolchain.name}}'
         repo_url: 'https://github.com/ShinojEdakkara/test-repo-mfp'
         type: clone
         has_issues: true
