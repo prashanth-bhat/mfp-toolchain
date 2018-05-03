@@ -9,9 +9,9 @@ template:
   header: '![](toolchain.svg?localize)'
   icon: icon.svg
   required:
-    - sample-mfp-service-creation
     - sample-app-build
     - sample-adapter-build
+    - mfp-service-creation
     - sample-repo
     - test-repo
   info:
@@ -41,19 +41,6 @@ services:
         type: clone
         has_issues: true
         enable_traceability: true
-  sample-mfp-service-creation:
-    service_id: pipeline
-    name: 'create-server-service-{{services.sample-repo.parameters.repo_name}}'
-    ui-pipeline: true
-    configuration:
-      content:
-        $text: pipelineApps.yml
-      env:
-        CF_APP_NAME: '{{form.pipeline.parameters.prod-app-name}}'
-        PROD_SPACE_NAME: '{{form.pipeline.parameters.prod-space}}'
-        PROD_ORG_NAME: '{{form.pipeline.parameters.prod-organization}}'
-        PROD_REGION_ID: '{{form.pipeline.parameters.prod-region}}'
-      execute: true
   sample-app-build:
     service_id: pipeline
     parameters:
@@ -90,6 +77,23 @@ services:
           PROD_ORG_NAME: '{{form.pipeline.parameters.prod-organization}}'
           PROD_REGION_ID: '{{form.pipeline.parameters.prod-region}}'
         execute: true
+mfp-service-creation:
+  service_id: pipeline
+  parameters:
+    services:
+      - sample-repo
+    name: 'mfp-service-{{services.sample-repo.parameters.repo_name}}'
+    ui-pipeline: true
+    configuration:
+      content:
+        $text: pipelinemfpservicecreate.yml
+      env:
+        SAMPLE_REPO: sample-repo
+        CF_APP_NAME: '{{form.pipeline.parameters.prod-app-name}}'
+        PROD_SPACE_NAME: '{{form.pipeline.parameters.prod-space}}'
+        PROD_ORG_NAME: '{{form.pipeline.parameters.prod-organization}}'
+        PROD_REGION_ID: '{{form.pipeline.parameters.prod-region}}'
+      execute: true
   webide:
     service_id: orion
 form:
