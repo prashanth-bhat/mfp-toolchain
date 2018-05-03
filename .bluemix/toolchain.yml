@@ -42,26 +42,15 @@ services:
         type: clone
         has_issues: true
         enable_traceability: true
-  kube-repo:
-      service_id: githubpublic
-      parameters:
-        repo_name: 'kube-{{toolchain.name}}'
-        repo_url: 'https://git.ng.bluemix.net/prashabh/mobilefoundation'
-        type: clone
-        has_issues: true
-        enable_traceability: true
-  sample-mfp-kube-creation:
+  sample-mfp-service-creation:
     service_id: pipeline
     parameters:
-      services:
-      - kube-repo
-    name: 'create-server-{{services.kube-repo.parameters.repo_name}}'
+    name: 'create-server-service-{{services.sample-repo.parameters.repo_name}}'
     ui-pipeline: true
     configuration:
       content:
-        $text: pipelineKubeCreate.yml
+        $text: pipelinemfpservicecreate.yml
       env:
-        KUBE_REPO: kube-repo
         CF_APP_NAME: '{{form.pipeline.parameters.prod-app-name}}'
         PROD_SPACE_NAME: '{{form.pipeline.parameters.prod-space}}'
         PROD_ORG_NAME: '{{form.pipeline.parameters.prod-organization}}'
