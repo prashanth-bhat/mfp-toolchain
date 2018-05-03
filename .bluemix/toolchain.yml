@@ -45,6 +45,8 @@ services:
   sample-mfp-service-creation:
     service_id: pipeline
     parameters:
+      services:
+        - sample-repo
     name: 'create-server-service-{{services.sample-repo.parameters.repo_name}}'
     ui-pipeline: true
     configuration:
