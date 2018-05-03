@@ -9,12 +9,11 @@ template:
   header: '![](toolchain.svg?localize)'
   icon: icon.svg
   required:
-    - sample-mfp-kube-creation
+    - sample-mfp-service-creation
     - sample-app-build
     - sample-adapter-build
     - sample-repo
     - test-repo
-    - kube-repo
   info:
     git url: >-
       [https://github.com/ShinojEdakkara/mfp80_toolchain](https://github.com/ShinojEdakkara/mfp80_toolchain)
