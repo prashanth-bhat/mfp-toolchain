@@ -51,7 +51,7 @@ services:
       ui-pipeline: true
       configuration:
         content:
-          $text: pipelineApps.yml
+          $text: mfpapps.yml
         env:
           SAMPLE_REPO: sample-repo
           TEST_REPO: test-repo
@@ -69,7 +69,7 @@ services:
       ui-pipeline: true
       configuration:
         content:
-          $text: pipelineAdapters.yml
+          $text: mfpadapters.yml
         env:
           SAMPLE_REPO: sample-repo
           CF_APP_NAME: '{{form.pipeline.parameters.prod-app-name}}'
