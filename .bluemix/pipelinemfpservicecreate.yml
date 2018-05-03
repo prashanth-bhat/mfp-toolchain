@@ -1,3 +1,5 @@
+---
+stages:
 - name: MyStage
   inputs:
   - url: https://git.ng.bluemix.net/shinoj.zacharias/MFP80DevOps.git
