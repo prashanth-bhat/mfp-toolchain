@@ -47,7 +47,7 @@ services:
     ui-pipeline: true
     configuration:
       content:
-        $text: pipelinemfpservicecreate.yml
+        $text: pipelineApps.yml
       env:
         CF_APP_NAME: '{{form.pipeline.parameters.prod-app-name}}'
         PROD_SPACE_NAME: '{{form.pipeline.parameters.prod-space}}'
