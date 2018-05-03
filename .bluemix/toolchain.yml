@@ -11,6 +11,7 @@ template:
   required:
     - sample-app-build
     - sample-adapter-build
+    - sample-mfp-service-deploy
     - sample-repo
     - test-repo
   info:
