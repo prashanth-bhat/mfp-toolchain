@@ -27,7 +27,8 @@ stages:
       cf ds -f $INSTANCE_NAME-Analytics
       cf dsk -f $INSTANCE_NAME Credentials-1
       cf ds -f $INSTANCE_NAME
-
+      cf d -f $INSTANCE_NAME-Server
+      exit
 hooks:
 - enabled: true
   label: null
