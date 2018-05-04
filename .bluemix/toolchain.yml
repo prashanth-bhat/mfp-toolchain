@@ -15,6 +15,7 @@ template:
     - sample-mfp-service-delete
     - sample-repo
     - test-repo
+    - kube-repo
   info:
     git url: >-
       [https://github.com/ShinojEdakkara/mfp80_toolchain](https://github.com/ShinojEdakkara/mfp80_toolchain)
@@ -42,6 +43,14 @@ services:
         type: clone
         has_issues: true
         enable_traceability: true
+  kube-repo:
+      service_id: githubpublic
+      parameters:
+        repo_name: 'kube-{{toolchain.name}}'
+        repo_url: 'https://git.ng.bluemix.net/prashabh/mobilefoundationbyol.git'
+        type: clone
+        has_issues: true
+        enable_traceability: true
   sample-mfp-service-deploy:
     service_id: pipeline
     parameters:
@@ -51,7 +60,7 @@ services:
       ui-pipeline: true
       configuration:
         content:
-          $text: pipelinemfpservicecreate.yml
+          $text: pipelineKubeCreate.yml
         env:
           SAMPLE_REPO: sample-repo
           CF_APP_NAME: '{{form.pipeline.parameters.prod-app-name}}'

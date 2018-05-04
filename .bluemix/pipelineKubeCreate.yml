@@ -1,14 +1,15 @@
 ---
 stages:
-- name: Build
+- name: Build-MFP-Server-Image
   inputs:
-  - url: https://git.ng.bluemix.net/prashabh/mobilefoundation.git
+  - url: https://git.ng.bluemix.net/prashabh/mobilefoundationbyol.git
     type: git
     branch: master
-    service: ${KUBE_REPO}
     dir_name: null
+  triggers:
+  - type: commit
   jobs:
-  - name: BuildDocker
+  - name: Build Docker image
     type: builder
     artifact_dir: output
     build_type: cr
@@ -52,47 +53,88 @@ stages:
       fi\n\necho \"Copy Helm chart along with the build\"\nif [ ! -d $ARCHIVE_DIR/chart/\
       \ ]; then # no need to copy if working in ./ already\n  cp -r ./chart/ $ARCHIVE_DIR/\n\
       fi\n\n"
-    namespace: prashanthspace
-    image_name: mfpf
+    namespace: byol
+    image_name: mobilefoundationbyol
     target:
       region_id: ibm:yp:us-south
-      api_key_id: ApiKey-8df6f228-1f3b-4506-85b1-612cbda99c16
-- name: Deploy
+      api_key_id: ApiKey-3c25572a-fbd4-44b5-886b-666b3f2172ad
+- name: Deploy-MFP-Server-Helm
   inputs:
   - type: job
-    stage: Build
-    job: BuildDocker
+    stage: Build-MFP-Server-Image
+    job: Build Docker image
     dir_name: null
   triggers:
   - type: stage
   properties:
-  - name: CLUSTER_NAMESPACE
-    value: default
-    type: text
   - name: buildprops
     value: build.properties
     type: file
+  - name: CLUSTER_NAMESPACE
+    value: default
+    type: text
+  - name: CHART_NAME
+    value: ibm-mfpf-server-prod
+    type: text
+  - name: REQUESTS_CPU
+    value: 1000m
+    type: text
+  - name: REQUESTS_MEMORY
+    value: 2048M
+    type: text
+  - name: LIMITS_CPU
+    value: 2000m
+    type: text
+  - name: LIMITS_MEMORY
+    value: 4096M
+    type: text
+  - name: USER
+    value: admin
+    type: text
+  - name: PASSWORD
+    value: admin
+    type: text
+  - name: DBHOST
+    value: dashdb-txn-small-yp-dal09-01.services.dal.bluemix.net
+    type: text
+  - name: DBPORT
+    value: '50000'
+    type: text
+  - name: DBUSER
+    value: bluadmin
+    type: text
+  - name: DBPASSWORD
+    value: NTZjYWJkYjdjNmQ3
+    type: text
+  - name: DB
+    value: BLUDB
+    type: text
+  - name: SCHEMA
+    value: DEVOPSBYOL
+    type: text
+  - name: REPLICAS
+    value: '2'
+    type: text
   jobs:
-  - name: Pre-check
+  - name: Pre-deploy check
     type: deployer
     deploy_permission: DEV_IN_SPACE
     deploy_type: kubernetes
     target:
       region_id: ibm:yp:us-south
-      api_key_id: ApiKey-8df6f228-1f3b-4506-85b1-612cbda99c16
-      kubernetes_cluster: mycluster
+      api_key_id: ApiKey-3c25572a-fbd4-44b5-886b-666b3f2172ad
+      kubernetes_cluster: mf-service-dev
     script: "#!/bin/bash\n# uncomment to debug the script\n#set -x\n# copy the script\
       \ below into your app code repo (e.g. ./scripts/check_predeploy.sh) and 'source'\
       \ it from your pipeline job\n#    source ./scripts/check_predeploy.sh\n# alternatively,\
       \ you can source it from online script:\n#    source <(curl -sSL \"https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_predeploy.sh\"\
       )\n# ------------------\n# source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_predeploy.sh\n\
       # Input env variables (can be received via a pipeline environment properties.file.\n\
-      ###\necho \"PWD : `pwd`\"\nls\n###\necho \"CHART_NAME=${CHART_NAME}\"\necho\
-      \ \"IMAGE_NAME=${IMAGE_NAME}\"\necho \"BUILD_NUMBER=${BUILD_NUMBER}\"\necho\
-      \ \"REGISTRY_URL=${REGISTRY_URL}\"\necho \"REGISTRY_NAMESPACE=${REGISTRY_NAMESPACE}\"\
-      \n      #View build properties\n# cat build.properties\n# also run 'env' command\
-      \ to find all available env variables\n# or learn more about the available environment\
-      \ variables at:\n# https://console.bluemix.net/docs/services/ContinuousDelivery/pipeline_deploy_var.html#deliverypipeline_environment\n\
+      echo \"CHART_NAME=${CHART_NAME}\"\necho \"IMAGE_NAME=${IMAGE_NAME}\"\necho \"\
+      BUILD_NUMBER=${BUILD_NUMBER}\"\necho \"REGISTRY_URL=${REGISTRY_URL}\"\necho\
+      \ \"REGISTRY_NAMESPACE=${REGISTRY_NAMESPACE}\"\n      #View build properties\n\
+      # cat build.properties\n# also run 'env' command to find all available env variables\n\
+      # or learn more about the available environment variables at:\n# https://console.bluemix.net/docs/services/ContinuousDelivery/pipeline_deploy_var.html#deliverypipeline_environment\n\
       \n# Input env variables from pipeline job\necho \"PIPELINE_KUBERNETES_CLUSTER_NAME=${PIPELINE_KUBERNETES_CLUSTER_NAME}\"\
       \necho \"CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE}\"\n\n#Check cluster availability\n\
       echo \"==========================================================\"\necho \"\
@@ -146,18 +188,18 @@ stages:
       helm version\n\necho \"==========================================================\"\
       \necho -e \"CHECKING HELM releases in this namespace: ${CLUSTER_NAMESPACE}\"\
       \nhelm list --namespace ${CLUSTER_NAMESPACE}\n"
-  - name: DeployHelm
+  - name: Deploy Helm chart
     type: deployer
     deploy_permission: DEV_IN_SPACE
     deploy_type: kubernetes
     target:
       region_id: ibm:yp:us-south
-      api_key_id: ApiKey-8df6f228-1f3b-4506-85b1-612cbda99c16
-      kubernetes_cluster: mycluster
+      api_key_id: ApiKey-3c25572a-fbd4-44b5-886b-666b3f2172ad
+      kubernetes_cluster: mf-service-dev
     script: |-
       #!/bin/bash
       # uncomment to debug the script
-      #set -x
+      set -x
       # copy the script below into your app code repo (e.g. ./scripts/deploy_helm.sh) and 'source' it from your pipeline job
       #    source ./scripts/deploy_helm.sh
       # alternatively, you can source it from online script:
@@ -166,8 +208,6 @@ stages:
       # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_helm.sh
       # Input env variables (can be received via a pipeline environment properties.file.
       echo "CHART_NAME=${CHART_NAME}"
-      CHART_NAME=ibm-mfpf-server-prod
-      echo "Fixed Chart name: CHART_NAME=${CHART_NAME}"
       echo "IMAGE_NAME=${IMAGE_NAME}"
       echo "BUILD_NUMBER=${BUILD_NUMBER}"
       echo "REGISTRY_URL=${REGISTRY_URL}"
@@ -192,18 +232,18 @@ stages:
       fi
       echo -e "Release name: ${RELEASE_NAME}"
 
-
-      echo "======================SERVER===================================="
+      echo "=========================================================="
       echo "DEPLOYING HELM chart"
       IMAGE_REPOSITORY=${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}
       IMAGE_PULL_SECRET_NAME="ibmcloud-toolchain-${PIPELINE_TOOLCHAIN_ID}-${REGISTRY_URL}"
+      INGRESS_HOST=`echo $(bx cs cluster-get ${PIPELINE_KUBERNETES_CLUSTER_NAME} | grep "Ingress Subdomain" | cut -d":" -f2)`
 
       # Using 'upgrade --install" for rolling updates. Note that subsequent updates will occur in the same namespace the release is currently deployed in, ignoring the explicit--namespace argument".
       echo -e "Dry run into: ${PIPELINE_KUBERNETES_CLUSTER_NAME}/${CLUSTER_NAMESPACE}."
-      helm upgrade --install --debug --dry-run ${RELEASE_NAME} ./chart/${CHART_NAME} --set image.repository=${IMAGE_REPOSITORY},image.tag=${BUILD_NUMBER},image.pullSecret=${IMAGE_PULL_SECRET_NAME} --namespace ${CLUSTER_NAMESPACE}
+      helm upgrade --install --debug --dry-run ${RELEASE_NAME} ./chart/${CHART_NAME} --set image.name=${IMAGE_REPOSITORY},image.tag=${BUILD_NUMBER},image.pullSecret=${IMAGE_PULL_SECRET_NAME},resources.requests.cpu=${REQUESTS_CPU},resources.requests.memory=${REQUESTS_MEMORY},resources.limits.cpu=${LIMITS_CPU},resources.limits.memory=${LIMITS_MEMORY},mobileFirstOperationsConsole.user=${USER},mobileFirstOperationsConsole.password=${PASSWORD},existingDB2Details.db2Host=${DBHOST},existingDB2Details.db2Port=${DBPORT},existingDB2Details.db2Username=${DBUSER},existingDB2Details.db2Password=${DBPASSWORD},existingDB2Details.db2Database=${DB},existingDB2Details.db2Schema=${SCHEMA},scaling.replicaCount=${REPLICAS},ingress.sslSecretName=${PIPELINE_KUBERNETES_CLUSTER_NAME},ingress.host=${INGRESS_HOST} --namespace ${CLUSTER_NAMESPACE}
 
       echo -e "Deploying into: ${PIPELINE_KUBERNETES_CLUSTER_NAME}/${CLUSTER_NAMESPACE}."
-      helm upgrade  --install ${RELEASE_NAME} ./chart/${CHART_NAME} --set image.repository=${IMAGE_REPOSITORY},image.tag=${BUILD_NUMBER},image.pullSecret=${IMAGE_PULL_SECRET_NAME} --namespace ${CLUSTER_NAMESPACE}
+      helm upgrade  --install ${RELEASE_NAME} ./chart/${CHART_NAME} --set image.name=${IMAGE_REPOSITORY},image.tag=${BUILD_NUMBER},image.pullSecret=${IMAGE_PULL_SECRET_NAME},resources.requests.cpu=${REQUESTS_CPU},resources.requests.memory=${REQUESTS_MEMORY},resources.limits.cpu=${LIMITS_CPU},resources.limits.memory=${LIMITS_MEMORY},mobileFirstOperationsConsole.user=${USER},mobileFirstOperationsConsole.password=${PASSWORD},existingDB2Details.db2Host=${DBHOST},existingDB2Details.db2Port=${DBPORT},existingDB2Details.db2Username=${DBUSER},existingDB2Details.db2Password=${DBPASSWORD},existingDB2Details.db2Database=${DB},existingDB2Details.db2Schema=${SCHEMA},scaling.replicaCount=${REPLICAS},ingress.sslSecretName=${PIPELINE_KUBERNETES_CLUSTER_NAME},ingress.host=${INGRESS_HOST} --namespace ${CLUSTER_NAMESPACE}
 
       echo "=========================================================="
       echo -e "CHECKING deployment status of release ${RELEASE_NAME} with image tag: ${BUILD_NUMBER}"
@@ -267,8 +307,6 @@ stages:
       echo -e "Status for release:${RELEASE_NAME}"
       helm status ${RELEASE_NAME}
 
-
-
       echo ""
       echo -e "History for release:${RELEASE_NAME}"
       helm history ${RELEASE_NAME}
@@ -283,7 +321,7 @@ stages:
       echo "=========================================================="
       IP_ADDR=$(bx cs workers ${PIPELINE_KUBERNETES_CLUSTER_NAME} | grep normal | head -n 1 | awk '{ print $2 }')
       PORT=$(kubectl get services --namespace ${CLUSTER_NAMESPACE} | grep ${RELEASE_NAME} | sed 's/.*:\([0-9]*\).*/\1/g')
-      echo -e "View the application at: http://${IP_ADDR}:${PORT}"
+      echo -e "View the application at: http://${INGRESS_HOST}/mfpconsole"
 hooks:
 - enabled: true
   label: null
